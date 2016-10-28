@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+
+    <title>Search Nearby Farmers Markets</title>
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static 'farketapp/css/styles.css' %}" media="screen" title="no title"  charset="utf-8"/>
+      {% include './header.html' %}
+  </head>
+  <body>
+    <h1>Search for Nearby Farmer's Markets </h1>
+    <div class="form-group">
+      <form action="/search" >
+        {% csrf_token %}
+        <input type="text" name="zip" class="col-xs-3" placeholder="Search Zip Code">
+        <input type="submit" class= "btn btn-primary" name="submit">
+      </form>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,188 @@
+{% load staticfiles %}
+{% include './header.html' %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Farmer's Markets Near You</title>
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <script>
+    $(document).ready(function(){
+      var address="";
+      var marketname;
+      $.get("http://search.ams.usda.gov/farmersmarkets/v1/data.svc/zipSearch?zip=" + {{zip}}, function(res) {
+        var test = res.results;
+
+        console.log(test);
+        for (var i in test) {
+          console.log(test[i]);
+          console.log(test[i].id);
+
+          var id = res.results[0].id;
+          // var table = document.getElementById('looping'[0]);
+          // var newField = document.createElement('input');
+          // newField.setAttribute('type', text);
+          // var newTd = document.createElement('td');
+          // newTd.appenChild(newField);
+          // var newTr = document.createElement('tr');
+          // newTr.appenChild(newTd);
+          // table.appenChild(newTr);
+
+
+
+
+
+          var list_item = document.createElement("tr");
+          var tag = document.createElement("td");
+          var link = document.createElement("a");
+
+          var display_name = document.createTextNode(res.results[i].marketname);
+          link.appendChild(display_name);
+          tag.appendChild(link);
+          list_item.appendChild(tag)
+          link.href = "/reviews";
+
+
+
+
+
+          document.getElementById('looping').appendChild(list_item);
+          console.log(display_name);
+
+          $.get("http://search.ams.usda.gov/farmersmarkets/v1/data.svc/mktDetail?id=" + test[i].id, function(extra_info){
+            marketname = extra_info.marketdetails.Address;
+            var closes_market = res.results[0].marketname;
+            address = extra_info.marketdetails.Address;
+            // console.log(address);
+
+            $('#market_details').html("<h2>"+closes_market+"</h2>");
+
+            console.log("address", address);
+            geocodeAddress(geocoder, map, address);
+
+          }, "json");
+        } // close for loop
+      }, "json");
+
+
+    })
+
+    var geocoder;
+    var map;
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 12,
+        center: {lat: -34.397, lng: 150.644}
+      });
+
+      geocoder = new google.maps.Geocoder();
+    }
+
+    function geocodeAddress(geo, resMap, addr) {
+      geo.geocode({'address': addr}, function(results, status) {
+        if (status === 'OK') {
+          resMap.setCenter(results[0].geometry.location);
+
+
+          var contentString = addr;
+          var infoWindow = new google.maps.InfoWindow({
+            content: contentString
+          });
+
+          var marker = new google.maps.Marker({
+            map: resMap,
+            position: results[0].geometry.location
+          });
+
+          marker.addListener('click', function() {
+          infoWindow.open(map, marker);
+        });
+        }
+      });
+    }
+
+
+
+    </script>
+  </head>
+  <body>
+<!-- ================================== NAV BAR =============================================== -->
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">{{request.session.first_name}}</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="/search">Home <span class="sr-only">(current)</span></a></li>
+      </ul>
+      <form class="navbar-form navbar-left" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+      <ul class="nav navbar-nav navbar-right">
+              <li><a href="/logout">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ==================================== NAV BAR ================================================ -->
+
+    <input type="text" name="name" placeholder="enter zip code/City" id="address">
+    <input type="submit" name="submit" id="submit">
+    <h1>Farmers Markets Near: {{zip}}</h1>
+    <div id="map" style = "height:400px; width:700px;">
+      <script type="text/javascript">
+
+
+      </script>
+      <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDgLiE3ktUgdXamy9Fy3fnfzKi1JkRx7cc&callback=initMap">
+      </script>
+
+    </div>
+
+
+    <div id = "market_details"></div>
+    <!-- ======================================= BOOTSTRAP =========================================== -->
+    <table class="table table-striped table-hover " id = "looping">
+      <thead>
+        <tr class = "table_row">
+          <th>#</th>
+          <th>Farmer's Market</th>
+          <th>Address</th>
+          <th>Rating</th>
+        </tr>
+      </thead>
+    </table>
+
+    <style>
+      .table_row {
+        border: 1px solid black;
+      }
+
+
+    </style>
+
+    <!-- ========================================= BOOTSTRAP================================================== -->
+
+    <div id = "market_details"></div>
+
+
+
+
+  </body>
+</html>
